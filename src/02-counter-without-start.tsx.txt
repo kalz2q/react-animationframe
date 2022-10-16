@@ -1,0 +1,41 @@
+import React from 'react';
+import './App.css';
+const { useEffect, useRef, useState, useCallback } = React;
+
+const useAnimationFrame = (callback = () => { }) => {
+  const reqIdRef = useRef<number>();
+  const loop = useCallback(() => {
+    reqIdRef.current = requestAnimationFrame(loop);
+    callback();
+  }, [callback]);
+
+  useEffect(() => {
+    reqIdRef.current = requestAnimationFrame(loop);
+    let currentnum = 0;
+    if (reqIdRef.current) currentnum = reqIdRef.current;
+    return () => cancelAnimationFrame(currentnum);
+  }, [loop]);
+};
+
+
+function App() {
+  const [counter, setCounter] = React.useState(0);
+
+
+
+
+  // setCounter するたびに関数を再生成するのを防ぐ
+  const countUp = React.useCallback(() => {
+    setCounter(prevCount => ++prevCount);
+  }, []);
+
+  useAnimationFrame(countUp);
+
+  return (
+    <div className="App">
+      <div>{counter}</div>
+    </div>
+  );
+}
+
+export default App;

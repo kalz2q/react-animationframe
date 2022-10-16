@@ -14,7 +14,6 @@ function App() {
     }
     return array;
   };
-
   // 0~99までのシャッフルされた配列
   const shuffledArray = shuffle(Array.from({ length: 100 }, (_, i) => i));
 
