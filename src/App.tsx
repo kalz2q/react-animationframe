@@ -1,42 +1,52 @@
 import React from 'react';
 import './App.css';
+const { useEffect, useRef, useState, useCallback } = React;
 
-// toggle start/stop button
-const { useState, useEffect } = React;
 function App() {
-  useEffect(() => {
-    document.title = "stop-timer";
-  });
-  const [stoppedTime, setStoppedTime] = useState(0);
-  const [time, setTime] = useState(0);
-  const [lastStartedAt, setLastStartedAt] = useState(0);
+  const [counter, setCounter] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
 
-  const calcTime = () => {
-    return lastStartedAt === 0
-      ? stoppedTime
-      : stoppedTime + new Date().getTime() - lastStartedAt;
-  };
-
-  const timer = () => {
-    if (lastStartedAt === 0) {
-      setLastStartedAt(new Date().getTime());
-    } else {
-      setStoppedTime(calcTime());
-      setLastStartedAt(0);
+  const shuffle = (raw: number[]) => {
+    const array = [...raw];
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
-    return;
+    return array;
+  };
+  // 0~99までのシャッフルされた配列
+  const shuffledArray = shuffle(Array.from({ length: 100 }, (_, i) => i));
+
+  const useAnimationFrame = (isRunning: boolean, callback = () => { }) => {
+    const reqIdRef = useRef<number>();
+    const loop = useCallback(() => {
+      if (isRunning) {
+        reqIdRef.current = requestAnimationFrame(loop);
+        callback();
+      }
+    }, [isRunning, callback]);
+
+    useEffect(() => {
+      reqIdRef.current = requestAnimationFrame(loop);
+      let currentnum = 0;
+      if (reqIdRef.current) currentnum = reqIdRef.current;
+      return () => cancelAnimationFrame(currentnum);
+    }, [loop]);
   };
 
-  requestAnimationFrame(() => setTime(calcTime()));
+
+  // setCounter するたびに関数を再生成するのを防ぐ
+  const countUp = useCallback(() => {
+    setCounter(prevCount => ++prevCount);
+  }, []);
+
+  useAnimationFrame(isRunning, countUp);
 
   return (
     <div className="App">
-      <p>timer (ms): {time}</p>
-      <p>
-        <button onClick={() => timer()}>
-          {lastStartedAt === 0 ? "start" : "stop"}
-        </button>
-      </p>
+      <div>{counter === 0 ? "??" : shuffledArray[counter % 100]}</div>
+      <button onClick={() => setIsRunning(true)}>START</button>
+      <button onClick={() => setIsRunning(false)}>STOP</button>
     </div>
   );
 }
