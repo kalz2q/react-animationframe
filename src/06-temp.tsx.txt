@@ -6,12 +6,18 @@ function App() {
   const [counter, setCounter] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
+
   const useAnimationFrame = (isRunning: boolean, callback = () => { }) => {
     const reqIdRef = useRef<number>();
     const loop = useCallback(() => {
       if (isRunning) {
         reqIdRef.current = requestAnimationFrame(loop);
         callback();
+      } else {
+        reqIdRef.current = requestAnimationFrame(loop);
+        let currentnum = 0;
+        currentnum = reqIdRef.current;
+        return () => cancelAnimationFrame(currentnum);
       }
     }, [isRunning, callback]);
 
